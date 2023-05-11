@@ -13,6 +13,8 @@ import scipy as sp
 import scipy.stats as st
 from scipy.interpolate import griddata
 
+from sklearn.linear_model import LinearRegression
+
 import pandas as pd
 
 import datetime as dt
@@ -34,7 +36,8 @@ import mplot as mp
 
 # GLOBAL VARIABLES
 
-EXT = '.pdf'
+EXT     = '.pdf'
+FIG_DIR = 'figures'
 
 ## Code Ocean directories
 #MLB_DIR = '../data/HIV'
@@ -235,12 +238,12 @@ plt.rcParams.update(PARAMS)
 ############# PLOTTING  FUNCTIONS #############
 
 def plot_lr_distribution_early(clone_file, fig_title):
-    """ Plot latent clone size and reactivation probability distribution in the first few months after ART. """
+    """ Plot latent clone size and reactivation probability distribution in the first few months after infection. """
 
     # get data
     df_clones_fullsim = pd.read_csv(clone_file, memory_map=True)
 
-    #timepoints
+    # timepoints
     timepoints = [1, 2, 3, 4]
     
     # set up figure grid
@@ -248,10 +251,10 @@ def plot_lr_distribution_early(clone_file, fig_title):
     goldh = w / 4
     fig   = plt.figure(figsize=(w, goldh))
 
-    left_bd   = 0.04
-    right_bd  = 1.03
-    h_space   = 0.0
-    box_h     = (right_bd - left_bd - 3*h_space)/4.5
+    left_bd   = 0.07
+    right_bd  = 0.90
+    h_space   = 0.05
+    box_h     = (right_bd - left_bd - 3*h_space)/4
     top_bd    = 0.92
     bottom_bd = 0.25
     v_space   = 0.10
@@ -284,7 +287,7 @@ def plot_lr_distribution_early(clone_file, fig_title):
                    'yticklabels': [r'$10^{0}$', r'$10^{1}$', r'$10^{2}$', r'$10^{3}$', r'$10^{4}$'],
                    'logy':        False,
                    'ylabel':      r'Clone size (number of cells)',
-                   'xlabel':      r'Probability of reactivation, $p_{R}$',
+                   'xlabel':      r'Probability of reactivation, $p_{r}$',
                    'axoffset':    0.1,
                    'theme':       'open' }
                    
@@ -334,7 +337,7 @@ def plot_lr_distribution_early(clone_file, fig_title):
 
         vmax = 2
 
-        im = ax_used.imshow(masked_array, cmap=cmap, extent=(-5,0,0,5), origin='lower', vmin=0, vmax=vmax)
+        im = ax_used.imshow(masked_array, cmap=cmap, extent=(-5,0,0,5), origin='lower', vmin=0, vmax=vmax, aspect='auto')
 
         # color bar
         if idx==len(gs)-1:
@@ -495,6 +498,292 @@ def plot_decay(total_file, fig_title):
 
     ax_left.legend(loc=1,prop={'size': 6}, frameon=False)
 
+    # SAVE FIGURE
+
+    plt.savefig('%s/%s%s' % (FIG_DIR, fig_title, EXT), dpi = 1000, facecolor = fig.get_facecolor(), edgecolor=None, **FIGPROPS)
+    plt.close(fig)
+    
+    
+def plot_lr_distribution_art(clone_file, timepoints, fig_title, order=7):
+    """ Plot latent clone size and reactivation probability distribution in the first months after ART. """
+    
+    # get data
+    df_clones = pd.read_csv(clone_file, memory_map=True)
+    
+    # set up figure grid
+    w     = DOUBLE_COLUMN #SLIDE_WIDTH
+    goldh = w / 4
+    fig   = plt.figure(figsize=(w, goldh))
+
+    left_bd   = 0.07
+    right_bd  = 0.90
+    h_space   = 0.05
+    box_h     = (right_bd - left_bd - 3*h_space)/4
+    top_bd    = 0.92
+    bottom_bd = 0.25
+    v_space   = 0.10
+    box_v     = (top_bd - bottom_bd - 1*v_space)/2
+
+    box = [0 for i in range(len(timepoints))]
+
+    box[0] = dict(left=left_bd + 0*box_h + 0*h_space, right=left_bd + 1*box_h + 0*h_space, top=top_bd, bottom=bottom_bd)
+    box[1] = dict(left=left_bd + 1*box_h + 1*h_space, right=left_bd + 2*box_h + 1*h_space, top=top_bd, bottom=bottom_bd)
+    box[2] = dict(left=left_bd + 2*box_h + 2*h_space, right=left_bd + 3*box_h + 2*h_space, top=top_bd, bottom=bottom_bd)
+    box[3] = dict(left=left_bd + 3*box_h + 3*h_space, right=left_bd + 4*box_h + 3*h_space, top=top_bd, bottom=bottom_bd)
+
+    lineprops = {'lw': 2*SIZELINE, 'ls': '-', 'alpha': 1 }
+    dashprops = {'lw': 2*SIZELINE, 'ls': ':', 'alpha': 0.5 }
+
+    gs = [gridspec.GridSpec(1, 1, **box[i]) for i in range(len(timepoints))]
+    ax = [plt.subplot(gs[i][0,0]) for i in range(len(gs))]
+
+
+    # PLOT FIGURE
+    
+    cmap = matplotlib.colormaps['PuBu']
+    for idx in range(len(gs)):
+    
+        pprops = { 'xlim':        [-4, 0],
+                   'xticks':      [-4, -2, 0],
+                   'xticklabels': [r'$10^{-4}$', r'$10^{-2}$', r'$10^{0}$'],
+                   'ylim':        [0, 5],
+                   'yticks':      [0, 1, 2, 3, 4, 5],
+                   'yticklabels': [r'$10^{0}$', r'$10^{1}$', r'$10^{2}$', r'$10^{3}$', r'$10^{4}$', r'$10^{5}$'],
+                   'logy':        False,
+                   'ylabel':      r'Clone size (number of cells)',
+                   'xlabel':      r'Probability of reactivation, $p_{r}$',
+                   'axoffset':    0.1,
+                   'theme':       'open' }
+                   
+        ax_used = ax[idx]
+        
+        if idx==0:
+            ax_used.text(box[idx]['left']+0.07, box[idx]['top']-0.01, 'Start of ART', transform=fig.transFigure, **DEF_LABELPROPS)
+        
+        if idx>0:
+            pprops['yticklabels'] = ['' for t in pprops['yticks']]
+            pprops['ylabel'] = ''
+            
+            ax_used.text(box[idx]['left']+0.06, box[idx]['top']-0.01, str(timepoints[idx])+' months on ART', transform=fig.transFigure, **DEF_LABELPROPS)
+        
+        xdat = [np.array([1, 2])]
+        ydat = [np.array([-1, -2])]
+
+        mp.plot(type='line',ax=ax_used, x=xdat, y=ydat, colors=[BKCOLOR], plotprops=lineprops, **pprops)
+        
+        df_clones_temp = df_clones[df_clones['t']==60+timepoints[idx]]
+        r = np.array(df_clones_temp['r'])
+        L = np.array(df_clones_temp['L'])
+        r = np.delete(r, np.where(L<1))
+        L = np.delete(L, np.where(L<1))
+        density = np.zeros((50, 50))
+        for k in range(len(L)):
+            i = -int((np.log10(r[k]))/0.1)  # 0.1 is size of step in p_r
+            j = int((np.log10(L[k]))/0.1)   # 0.1 is size of step in clone size
+            density[i][j] += 1
+
+        rx = np.arange(0.05, 5, 0.1)
+        fy = np.arange(0.05, 5, 0.1)
+        x = np.zeros(50*50)
+        y = np.zeros(50*50)
+        z = np.zeros(50*50)
+
+        for i in range(50):
+            for j in range(50):
+                x[i*50+j] = rx[i]
+                y[i*50+j] = fy[j]
+                z[i*50+j] = density[i][j]
+
+        points = np.column_stack((-x,y))
+        values = np.log10(z+1)
+        grid_x, grid_y = np.mgrid[-5:0:100j, 0:5:100j]
+        grid_z = griddata(points, values, (grid_x, grid_y), method='linear')
+        masked_array = np.ma.array(grid_z.T, mask = grid_z.T==0)
+        
+        vmax_order = order-5
+        
+        im = ax_used.imshow(masked_array, cmap=cmap, extent=(-5,0,0,5), origin='lower', vmin=0, vmax=vmax_order, aspect='auto')
+        
+        # approximate slope for largest clones as a function of p_r
+        if idx==len(gs)-1:
+            x_out = []
+            y_out = []
+
+            for i in range(50):
+                x_out.append(-rx[i])
+                y_largest = 0
+                for j in range(50):
+                    if density[i][j] > 0:
+                        if fy[j] > y_largest:
+                            y_largest = fy[j]
+                y_out.append(y_largest)
+            
+            for i in range(len(x_out)):
+                if x_out[i] < -3.8:
+                    if y_out[i] < 3:
+                        y_out[i] = 0
+                        
+            x_out = list(np.array(x_out)[np.array(y_out)>0])
+            y_out = list(np.array(y_out)[np.array(y_out)>0])
+            model = LinearRegression().fit(np.array(x_out).reshape(-1, 1), np.array(y_out))
+            xx    = np.array(x_out)
+            
+            tempdashprops = {'lw': 2*SIZELINE, 'ls': ':', 'alpha': 1.0}
+            
+            #mp.plot(type='line', ax=ax_used, x=[x_out], y=[y_out], colors=[BKCOLOR], plotprops=tempdashprops, **pprops)
+            mp.line(ax=ax_used, x=[xx], y=[model.predict(xx.reshape(-1,1))], colors=[BKCOLOR], plotprops=tempdashprops, **pprops)
+            
+            xunits = pprops['xlim'][1] - pprops['xlim'][0]
+            yunits = pprops['ylim'][1] - pprops['ylim'][0]
+            # ALSO ACCOUNT FOR CANVAS SIZE?
+            m      = model.coef_[0] * xunits/yunits
+            deg    = np.arcsin(m / np.sqrt(1 + m**2)) * 180 / np.pi
+            print(deg)
+            
+            ax_used.text(-1.7, 2.5, r'Max clone size $\propto p_r^{-1.15}$', ha='center', va='center', rotation=deg, **DEF_LABELPROPS)
+    
+    # color bar
+    cbar_ax = fig.add_axes([0.93, 0.25, 0.01, 0.65])
+    ticks_order = [0, 1, 2]
+    if order == 8:
+        ticks_order = [0, 1.5, 3]
+    elif order == 9:
+        ticks_order = [0, 2, 4]
+    cbar = fig.colorbar(im, cax=cbar_ax, ticks=ticks_order)
+    cbar.ax.set_yticklabels([r'$10^{0}$', r'$10^{1}$', r'$10^{2}$'])
+    if order == 8:
+        cbar.ax.set_yticklabels([r'$10^{0}$', r'$10^{1.5}$', r'$10^{3}$'])
+    elif order == 9:
+        cbar.ax.set_yticklabels([r'$10^{0}$', r'$10^{2}$', r'$10^{4}$'])
+    cbar.ax.tick_params(labelsize=SIZETICK, size=0)
+    cbar_ax.text(0.98, (top_bd+bottom_bd)/2, 'Density (number of clones)', ha='center', va='center', rotation=90,
+                 transform=fig.transFigure, **DEF_LABELPROPS)
+    cbar.outline.set_visible(False)
+    
+    # SAVE FIGURE
+
+    plt.savefig('%s/%s%s' % (FIG_DIR, fig_title, EXT), dpi = 1000, facecolor = fig.get_facecolor(), edgecolor=None, **FIGPROPS)
+    plt.close(fig)
+    
+    
+def plot_lr_distribution_art_old(clone_file, timepoints, fig_title, order=7):
+    """ Plot latent clone size and reactivation probability distribution in the first months after ART. """
+    
+    # get data
+    df_clones = pd.read_csv(clone_file, memory_map=True)
+    
+    # set up figure grid
+    w     = DOUBLE_COLUMN #SLIDE_WIDTH
+    goldh = w / 4
+    fig   = plt.figure(figsize=(w, goldh))
+
+    left_bd   = 0.07
+    right_bd  = 0.90
+    h_space   = 0.05
+    box_h     = (right_bd - left_bd - 3*h_space)/4
+    top_bd    = 0.92
+    bottom_bd = 0.25
+    v_space   = 0.10
+    box_v     = (top_bd - bottom_bd - 1*v_space)/2
+
+    box = [0 for i in range(len(timepoints))]
+
+    box[0] = dict(left=left_bd + 0*box_h + 0*h_space, right=left_bd + 1*box_h + 0*h_space, top=top_bd, bottom=bottom_bd)
+    box[1] = dict(left=left_bd + 1*box_h + 1*h_space, right=left_bd + 2*box_h + 1*h_space, top=top_bd, bottom=bottom_bd)
+    box[2] = dict(left=left_bd + 2*box_h + 2*h_space, right=left_bd + 3*box_h + 2*h_space, top=top_bd, bottom=bottom_bd)
+    box[3] = dict(left=left_bd + 3*box_h + 3*h_space, right=left_bd + 4*box_h + 3*h_space, top=top_bd, bottom=bottom_bd)
+
+    lineprops = {'lw': 2*SIZELINE, 'ls': '-', 'alpha': 1 }
+    dashprops = {'lw': 2*SIZELINE, 'ls': ':', 'alpha': 0.5 }
+
+    gs = [gridspec.GridSpec(1, 1, **box[i]) for i in range(len(timepoints))]
+    ax = [plt.subplot(gs[i][0,0]) for i in range(len(gs))]
+
+
+    # PLOT FIGURE
+    
+    cmap = matplotlib.colormaps['PuBu']
+    for idx in range(len(gs)):
+    
+        pprops = { 'xlim':        [-4, 0],
+                   'xticks':      [-4, -2, 0],
+                   'xticklabels': [r'$10^{-4}$', r'$10^{-2}$', r'$10^{0}$'],
+                   'ylim':        [0, 5],
+                   'yticks':      [0, 1, 2, 3, 4, 5],
+                   'yticklabels': [r'$10^{0}$', r'$10^{1}$', r'$10^{2}$', r'$10^{3}$', r'$10^{4}$', r'$10^{5}$'],
+                   'logy':        False,
+                   'ylabel':      r'Clone size (number of cells)',
+                   'xlabel':      r'Probability of reactivation, $p_{r}$',
+                   'axoffset':    0.1,
+                   'theme':       'open' }
+                   
+        ax_used = ax[idx]
+        
+        if idx==0:
+            ax_used.text(box[idx]['left']+0.07, box[idx]['top']-0.01, 'Start of ART', transform=fig.transFigure, **DEF_LABELPROPS)
+        
+        if idx>0:
+            pprops['yticklabels'] = ['' for t in pprops['yticks']]
+            pprops['ylabel'] = ''
+            
+            ax_used.text(box[idx]['left']+0.06, box[idx]['top']-0.01, str(timepoints[idx])+' months on ART', transform=fig.transFigure, **DEF_LABELPROPS)
+        
+        xdat = [np.array([1, 2])]
+        ydat = [np.array([-1, -2])]
+
+        mp.plot(type='line',ax=ax_used, x=xdat, y=ydat, colors=[BKCOLOR], plotprops=lineprops, **pprops)
+        
+        df_clones_temp = df_clones[df_clones['t']==60+timepoints[idx]]
+        r = np.array(df_clones_temp['r'])
+        L = np.array(df_clones_temp['L'])
+        r = np.delete(r, np.where(L<1))
+        L = np.delete(L, np.where(L<1))
+        density = np.zeros((50, 50))
+        for k in range(len(L)):
+            i = -int((np.log10(r[k]))/0.1)  # 0.1 is size of step in p_r
+            j = int((np.log10(L[k]))/0.1)   # 0.1 is size of step in clone size
+            density[i][j] += 1
+
+        rx = np.arange(0.05, 5, 0.1)
+        fy = np.arange(0.05, 5, 0.1)
+        x = np.zeros(50*50)
+        y = np.zeros(50*50)
+        z = np.zeros(50*50)
+
+        for i in range(50):
+            for j in range(50):
+                x[i*50+j] = rx[i]
+                y[i*50+j] = fy[j]
+                z[i*50+j] = density[i][j]
+
+        points = np.column_stack((-x,y))
+        values = np.log10(z+1)
+        grid_x, grid_y = np.mgrid[-5:0:100j, 0:5:100j]
+        grid_z = griddata(points, values, (grid_x, grid_y), method='linear')
+        masked_array = np.ma.array(grid_z.T, mask = grid_z.T==0)
+        
+        vmax_order = order-5
+        
+        im = ax_used.imshow(masked_array, cmap=cmap, extent=(-5,0,0,5), origin='lower', vmin=0, vmax=vmax_order, aspect='auto')
+    
+    # color bar
+    cbar_ax = fig.add_axes([0.93, 0.25, 0.01, 0.65])
+    ticks_order = [0, 1, 2]
+    if order == 8:
+        ticks_order = [0, 1.5, 3]
+    elif order == 9:
+        ticks_order = [0, 2, 4]
+    cbar = fig.colorbar(im, cax=cbar_ax, ticks=ticks_order)
+    cbar.ax.set_yticklabels([r'$10^{0}$', r'$10^{1}$', r'$10^{2}$'])
+    if order == 8:
+        cbar.ax.set_yticklabels([r'$10^{0}$', r'$10^{1.5}$', r'$10^{3}$'])
+    elif order == 9:
+        cbar.ax.set_yticklabels([r'$10^{0}$', r'$10^{2}$', r'$10^{4}$'])
+    cbar.ax.tick_params(labelsize=SIZETICK, size=0)
+    cbar_ax.text(0.98, (top_bd+bottom_bd)/2, 'Density (number of clones)', ha='center', va='center', rotation=90,
+                 transform=fig.transFigure, **DEF_LABELPROPS)
+    cbar.outline.set_visible(False)
+    
     # SAVE FIGURE
 
     plt.savefig('%s/%s%s' % (FIG_DIR, fig_title, EXT), dpi = 1000, facecolor = fig.get_facecolor(), edgecolor=None, **FIGPROPS)
