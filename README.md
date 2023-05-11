@@ -4,10 +4,11 @@
 This repository contains and data and scripts for reproducing the results accompanying the manuscript  
 
 ### Title of paper
-Author One<sup>1</sup>, Author Two<sup>2</sup>, and John P. Barton<sup>1,2,#</sup>
+Author One<sup>1</sup>, Author Two<sup>2</sup>, and John P. Barton<sup>1,2,3,#</sup>
 
 <sup>1</sup> Department of Physics and Astronomy, University of California, Riverside  
-<sup>2</sup> Department of Computational and Systems Biology, University of Pittsburgh School of Medicine  
+<sup>2</sup> Department of Physics and Astronomy, University of Pittsburgh  
+<sup>3</sup> Department of Computational and Systems Biology, University of Pittsburgh School of Medicine  
 <sup>#</sup> correspondence to [jpbarton@pitt.edu](mailto:jpbarton@pitt.edu)  
 
 The preprint is available at __INSERT LINK HERE__.
