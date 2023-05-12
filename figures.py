@@ -276,7 +276,7 @@ def plot_lr_distribution_early(clone_file, fig_title):
 
     # PLOT FIGURE
     
-    cmap = matplotlib.colormaps['PuBu']
+    cmap = cm.get_cmap('PuBu')
     for idx in range(len(gs)):
 
         pprops = { 'xlim':        [-4, 0],
@@ -450,14 +450,16 @@ def plot_decay(total_file, fig_title):
                'theme':       'open' }
      
 
-    Decay99d = 5.00*(10**(ORDER_FULLSIM-3))*np.exp(-(np.divide(t_fullsim-MONTHSART_FULLSIM,(99/30)/np.log(2))))
-    Decay133d = 8.00*(10**(ORDER_FULLSIM-3))*np.exp(-(np.divide(t_fullsim-MONTHSART_FULLSIM,(133/30)/np.log(2))))
+    Decay99d = 5.40*(10**(ORDER_FULLSIM-3))*np.exp(-(np.divide(t_fullsim-MONTHSART_FULLSIM-0.47,(99/30)/np.log(2))))
+    Decay133d = 5.40*(10**(ORDER_FULLSIM-3))*np.exp(-(np.divide(t_fullsim-MONTHSART_FULLSIM-0.47,(133/30)/np.log(2))))
 
     xdat = [(t_fullsim-MONTHSART_FULLSIM)*30]
     ydat = [Ltotal_fullsim/(1.75*(10**(ORDER_FULLSIM-6)))]
     mp.plot(type='line',ax=ax_middle, x=xdat, y=ydat, colors=[C_DNA], plotprops=lineprops, **pprops)
-    ax_middle.plot((t_fullsim-MONTHSART_FULLSIM)*30, Decay99d/(1.75*(10**(ORDER_FULLSIM-6))), color='#969696', alpha=0.5)
-    ax_middle.plot((t_fullsim-MONTHSART_FULLSIM)*30, Decay133d/(1.75*(10**(ORDER_FULLSIM-6))), color='#969696', alpha=0.5)
+    ax_middle.plot((t_fullsim-MONTHSART_FULLSIM)[6047:]*30, (Decay99d/(1.75*(10**(ORDER_FULLSIM-6))))[6047:], color='#969696', alpha=0.5)
+    ax_middle.plot((t_fullsim-MONTHSART_FULLSIM)[6047:]*30, (Decay133d/(1.75*(10**(ORDER_FULLSIM-6))))[6047:], color='#969696', alpha=0.5)
+
+
 
 
     # IUPM plot
@@ -540,7 +542,7 @@ def plot_lr_distribution_art(clone_file, timepoints, fig_title, order=7):
 
     # PLOT FIGURE
     
-    cmap = matplotlib.colormaps['PuBu']
+    cmap = cm.get_cmap('PuBu')
     for idx in range(len(gs)):
     
         pprops = { 'xlim':        [-4, 0],
@@ -702,7 +704,7 @@ def plot_lr_distribution_art_old(clone_file, timepoints, fig_title, order=7):
 
     # PLOT FIGURE
     
-    cmap = matplotlib.colormaps['PuBu']
+    cmap = cm.get_cmap('PuBu')
     for idx in range(len(gs)):
     
         pprops = { 'xlim':        [-4, 0],
