@@ -77,9 +77,9 @@ COLOR_2    = '#FFB511'
 VAR_COLORS = sns.husl_palette(8)
 C_RNA      = VAR_COLORS[0]
 C_DNA      = VAR_COLORS[1]
-C_IUPM    = VAR_COLORS[2]
-C_BETA     = VAR_COLORS[3]
-C_LAMBDA   = VAR_COLORS[4]
+C_IUPM     = VAR_COLORS[2]
+C_MUT      = VAR_COLORS[4]
+C_CLONE    = VAR_COLORS[5]
 C_EPSILON  = VAR_COLORS[5]
 C_D614G    = VAR_COLORS[6]
 C_A222V    = VAR_COLORS[7]
@@ -292,12 +292,12 @@ def plot_lr_distribution_early(clone_file, fig_title):
                    'theme':       'open' }
                    
         if idx==0:
-            ax[idx].text(box[idx]['left']+0.05, box[idx]['top']-0.01, '1 month after infection', transform=fig.transFigure, **DEF_LABELPROPS)
+            ax[idx].text((box[idx]['left']+box[idx]['right'])/2, box[idx]['top']-0.01, '1 month after infection', ha='center', transform=fig.transFigure, **DEF_LABELPROPS)
                    
         if idx>0:
             pprops['ylabel'] = ''
             pprops['yticklabels'] = ['' for i in range(len(pprops['yticks']))]
-            ax[idx].text(box[idx]['left']+0.09, box[idx]['top']-0.01, str(timepoints[idx])+' months', transform=fig.transFigure, **DEF_LABELPROPS)
+            ax[idx].text((box[idx]['left']+box[idx]['right'])/2, box[idx]['top']-0.01, str(timepoints[idx])+' months', ha='center', transform=fig.transFigure, **DEF_LABELPROPS)
 
         ax_used = ax[idx]
 
@@ -377,9 +377,9 @@ def plot_decay(total_file, fig_title):
     box_dh  = 0.12
     box_top = 0.93
 
-    box_left   = dict(left=0.15, right=0.95, top=box_top - 0*box_h - 0*box_dh, bottom=box_top - 1*box_h - 0*box_dh)
-    box_middle = dict(left=0.15, right=0.95, top=box_top - 1*box_h - 1*box_dh, bottom=box_top - 2*box_h - 1*box_dh)
-    box_right  = dict(left=0.15, right=0.95, top=box_top - 2*box_h - 2*box_dh, bottom=box_top - 3*box_h - 2*box_dh)
+    box_left   = dict(left=0.18, right=0.95, top=box_top - 0*box_h - 0*box_dh, bottom=box_top - 1*box_h - 0*box_dh)
+    box_middle = dict(left=0.18, right=0.95, top=box_top - 1*box_h - 1*box_dh, bottom=box_top - 2*box_h - 1*box_dh)
+    box_right  = dict(left=0.18, right=0.95, top=box_top - 2*box_h - 2*box_dh, bottom=box_top - 3*box_h - 2*box_dh)
 
     
     # PLOT FIGURE
@@ -394,9 +394,9 @@ def plot_decay(total_file, fig_title):
     pprops = { 'xlim':        [0, 45],
                'xticks':      [0, 15, 30, 45],
                'xticklabels': [r'$0$', r'$15$', r'$30$', r'$45$'],
-               'ylim':        [1e2, 1e6],
-               'yticks':      [1e2, 1e4, 1e6],
-               'yticklabels': [r'$10^{2}$', r'$10^{4}$', r'$10^{6}$'],
+               'ylim':        [1e3, 1e6],
+               'yticks':      [1e3, 1e4, 1e5, 1e6],
+               'yticklabels': [r'$10^{3}$', r'$10^{4}$', r'$10^{5}$', r'$10^{6}$'],
                'logy':        True,
                'ylabel':      r'RNA copies ml$^{-1}$',
                'xlabel':      'Time on ART (days)',
@@ -440,9 +440,9 @@ def plot_decay(total_file, fig_title):
     pprops = { 'xlim':        [0, 150],
                'xticks':      [0, 50, 100, 150],
                'xticklabels': [r'$0$', r'$50$', r'$100$', r'$150$'],
-               'ylim':        [1e3, 1e4],
-               'yticks':      [1e3, 1e4],
-               'yticklabels': [r'$10^{3}$', r'$10^{4}$'],
+               'ylim':        [1e3, 5e3],
+               'yticks':      [1e3, 2e3, 4e3],
+               'yticklabels': [r'$1\times 10^{3}$', r'$2\times 10^{3}$', r'$4\times 10^{3}$'],
                'logy':        True,
                'ylabel':      'DNA per 10'+r'$^{6}$'+ ' PBMC',
                'xlabel':      'Time on ART (days)',
@@ -460,8 +460,6 @@ def plot_decay(total_file, fig_title):
     ax_middle.plot((t_fullsim-MONTHSART_FULLSIM)[6047:]*30, (Decay133d/(1.75*(10**(ORDER_FULLSIM-6))))[6047:], color='#969696', alpha=0.5)
 
 
-
-
     # IUPM plot
 
     lineprops = {'lw': 2*SIZELINE, 'ls': '-', 'alpha': 1 }
@@ -474,7 +472,7 @@ def plot_decay(total_file, fig_title):
                'xticks':      [1, 3, 5, 7, 9],
                'xticklabels': [r'$1$', r'$3$', r'$5$', r'$7$', r'$9$'],
                'ylim':        [1e-2, 1e1],
-               'yticks':      [1e-2, 1e-1,1e0, 1e1],
+               'yticks':      [1e-2, 1e-1, 1e0, 1e1],
                'yticklabels': [r'$10^{-2}$', r'$10^{-1}$', r'$10^{0}$', r'$10^{1}$'],
                'logy':        True,
                'ylabel':      'IUPM',
@@ -500,6 +498,301 @@ def plot_decay(total_file, fig_title):
 
     ax_left.legend(loc=1,prop={'size': 6}, frameon=False)
 
+    # SAVE FIGURE
+
+    plt.savefig('%s/%s%s' % (FIG_DIR, fig_title, EXT), dpi = 1000, facecolor = fig.get_facecolor(), edgecolor=None, **FIGPROPS)
+    plt.close(fig)
+    
+
+def plot_lr_distribution_mutations_art(clone_file, timepoints, mutation_file, fig_title, order=7):
+    """ Plot latent clone size and reactivation probability distribution, and accumulated mutations, in the first months after ART. """
+    
+    # get data
+    df_clones    = pd.read_csv(clone_file, memory_map=True)
+    df_mutations = pd.read_csv(mutation_file, memory_map=True)
+    
+    # set up figure grid
+    w     = DOUBLE_COLUMN #SLIDE_WIDTH
+    goldh = 1.7 * w / 4
+    fig   = plt.figure(figsize=(w, goldh))
+
+    old_space = (0.92 - 0.25) * w / 4
+
+    left_bd   = 0.07
+    right_bd  = 0.90
+    h_space   = 0.05
+    box_h     = (right_bd - left_bd - 3*h_space)/4
+    top_bd    = 0.92
+    mid_bd    = top_bd - (old_space/goldh)
+    bottom_bd = 0.12
+    v_space   = 0.20
+    
+    # lr distribution
+    box = [0 for i in range(len(timepoints))]
+
+    box[0] = dict(left=left_bd + 0*box_h + 0*h_space, right=left_bd + 1*box_h + 0*h_space, top=top_bd, bottom=mid_bd)
+    box[1] = dict(left=left_bd + 1*box_h + 1*h_space, right=left_bd + 2*box_h + 1*h_space, top=top_bd, bottom=mid_bd)
+    box[2] = dict(left=left_bd + 2*box_h + 2*h_space, right=left_bd + 3*box_h + 2*h_space, top=top_bd, bottom=mid_bd)
+    box[3] = dict(left=left_bd + 3*box_h + 3*h_space, right=left_bd + 4*box_h + 3*h_space, top=top_bd, bottom=mid_bd)
+
+    lineprops = {'lw': 2*SIZELINE, 'ls': '-', 'alpha': 1 }
+    dashprops = {'lw': 2*SIZELINE, 'ls': ':', 'alpha': 0.5 }
+
+    gs = [gridspec.GridSpec(1, 1, **box[i]) for i in range(len(timepoints))]
+    ax = [plt.subplot(gs[i][0,0]) for i in range(len(gs))]
+    
+    # lr mutations
+    left_mut  = (right_bd + left_bd)/2 - 0.25
+    right_mut = left_mut + 0.5
+    dh        = 1.6
+    h_mut     = (right_mut - left_mut - dh*h_space)/2
+    
+    bbox = [0, 0]
+    bbox[0] = dict(left=left_mut + 0*h_mut +  0*h_space, right=left_mut + 1*h_mut +  0*h_space, top=mid_bd-v_space, bottom=bottom_bd)
+    bbox[1] = dict(left=left_mut + 1*h_mut + dh*h_space, right=left_mut + 2*h_mut + dh*h_space, top=mid_bd-v_space, bottom=bottom_bd)
+
+    gs_mut = [gridspec.GridSpec(1, 1, **bbox[i]) for i in range(len(bbox))]
+    ax_mut = [plt.subplot(gs_mut[i][0,0]) for i in range(len(gs_mut))]
+
+
+    # PLOT FIGURE
+    
+    cmap = cm.get_cmap('PuBu')
+    for idx in range(len(gs)):
+    
+        pprops = { 'xlim':        [-4, 0],
+                   'xticks':      [-4, -2, 0],
+                   'xticklabels': [r'$10^{-4}$', r'$10^{-2}$', r'$10^{0}$'],
+                   'ylim':        [0, 5],
+                   'yticks':      [0, 1, 2, 3, 4, 5],
+                   'yticklabels': [r'$10^{0}$', r'$10^{1}$', r'$10^{2}$', r'$10^{3}$', r'$10^{4}$', r'$10^{5}$'],
+                   'logy':        False,
+                   'ylabel':      r'Clone size (number of cells)',
+                   'xlabel':      r'Probability of reactivation, $p_{r}$',
+                   'axoffset':    0.1,
+                   'theme':       'open' }
+                   
+        ax_used = ax[idx]
+        
+        if idx==0:
+            ax_used.text((box[idx]['left']+box[idx]['right'])/2, box[idx]['top']-0.01, 'Start of ART', ha='center', transform=fig.transFigure, **DEF_LABELPROPS)
+            ax_used.text(box[idx]['left']-0.045, box[idx]['top']+0.02, 'A', transform=fig.transFigure, **DEF_SUBLABELPROPS)
+        
+        if idx>0:
+            pprops['yticklabels'] = ['' for t in pprops['yticks']]
+            pprops['ylabel'] = ''
+            
+            ax_used.text((box[idx]['left']+box[idx]['right'])/2, box[idx]['top']-0.01, str(timepoints[idx])+' months on ART', ha='center', transform=fig.transFigure, **DEF_LABELPROPS)
+        
+        xdat = [np.array([1, 2])]
+        ydat = [np.array([-1, -2])]
+
+        mp.plot(type='line',ax=ax_used, x=xdat, y=ydat, colors=[BKCOLOR], plotprops=lineprops, **pprops)
+        
+        df_clones_temp = df_clones[df_clones['t']==60+timepoints[idx]]
+        r = np.array(df_clones_temp['r'])
+        L = np.array(df_clones_temp['L'])
+        r = np.delete(r, np.where(L<1))
+        L = np.delete(L, np.where(L<1))
+        density = np.zeros((50, 50))
+        for k in range(len(L)):
+            i = -int((np.log10(r[k]))/0.1)  # 0.1 is size of step in p_r
+            j = int((np.log10(L[k]))/0.1)   # 0.1 is size of step in clone size
+            density[i][j] += 1
+
+        rx = np.arange(0.05, 5, 0.1)
+        fy = np.arange(0.05, 5, 0.1)
+        x = np.zeros(50*50)
+        y = np.zeros(50*50)
+        z = np.zeros(50*50)
+
+        for i in range(50):
+            for j in range(50):
+                x[i*50+j] = rx[i]
+                y[i*50+j] = fy[j]
+                z[i*50+j] = density[i][j]
+
+        points = np.column_stack((-x,y))
+        values = np.log10(z+1)
+        grid_x, grid_y = np.mgrid[-5:0:100j, 0:5:100j]
+        grid_z = griddata(points, values, (grid_x, grid_y), method='linear')
+        masked_array = np.ma.array(grid_z.T, mask = grid_z.T==0)
+        
+        vmax_order = order-5
+        
+        im = ax_used.imshow(masked_array, cmap=cmap, extent=(-5,0,0,5), origin='lower', vmin=0, vmax=vmax_order, aspect='auto')
+        
+        # approximate slope for largest clones as a function of p_r
+        if idx==len(gs)-1:
+            x_out = []
+            y_out = []
+
+            for i in range(50):
+                x_out.append(-rx[i])
+                y_largest = 0
+                for j in range(50):
+                    if density[i][j] > 0:
+                        if fy[j] > y_largest:
+                            y_largest = fy[j]
+                y_out.append(y_largest)
+            
+            for i in range(len(x_out)):
+                if x_out[i] < -3.8:
+                    if y_out[i] < 3:
+                        y_out[i] = 0
+                        
+            x_out = list(np.array(x_out)[np.array(y_out)>0])
+            y_out = list(np.array(y_out)[np.array(y_out)>0])
+            model = LinearRegression().fit(np.array(x_out).reshape(-1, 1), np.array(y_out))
+            xx    = np.array(x_out)
+            
+            tempdashprops = {'lw': 2*SIZELINE, 'ls': ':', 'alpha': 1.0}
+            
+            #mp.plot(type='line', ax=ax_used, x=[x_out], y=[y_out], colors=[BKCOLOR], plotprops=tempdashprops, **pprops)
+            mp.line(ax=ax_used, x=[xx], y=[model.predict(xx.reshape(-1,1))], colors=[BKCOLOR], plotprops=tempdashprops, **pprops)
+            
+            xunits = pprops['xlim'][1] - pprops['xlim'][0]
+            yunits = pprops['ylim'][1] - pprops['ylim'][0]
+            # ALSO ACCOUNT FOR CANVAS SIZE?
+            m      = model.coef_[0] * xunits/yunits
+            deg    = np.arcsin(m / np.sqrt(1 + m**2)) * 180 / np.pi
+            #print(deg)
+            
+            ax_used.text(-1.7, 2.5, r'Max clone size $\propto p_r^{-1.15}$', ha='center', va='center', rotation=deg, **DEF_LABELPROPS)
+    
+    # color bar
+    cbar_ax = fig.add_axes([top_bd+0.01, mid_bd, 0.01, top_bd - mid_bd])
+    ticks_order = [0, 1, 2]
+    if order == 8:
+        ticks_order = [0, 1.5, 3]
+    elif order == 9:
+        ticks_order = [0, 2, 4]
+    cbar = fig.colorbar(im, cax=cbar_ax, ticks=ticks_order)
+    cbar.ax.set_yticklabels([r'$10^{0}$', r'$10^{1}$', r'$10^{2}$'])
+    if order == 8:
+        cbar.ax.set_yticklabels([r'$10^{0}$', r'$10^{1.5}$', r'$10^{3}$'])
+    elif order == 9:
+        cbar.ax.set_yticklabels([r'$10^{0}$', r'$10^{2}$', r'$10^{4}$'])
+    cbar.ax.tick_params(labelsize=SIZETICK, size=0)
+    cbar_ax.text(0.98, (top_bd+mid_bd)/2, 'Density (number of clones)', ha='center', va='center', rotation=90,
+                 transform=fig.transFigure, **DEF_LABELPROPS)
+    cbar.outline.set_visible(False)
+    
+    # MUTATIONS
+    
+    t_mut = [12, 60]
+    for idx in range(len(ax_mut)):
+    
+        barprops =  dict(lw=0, width=0.8, align='center', orientation='vertical')
+        
+        pprops = { 'xlim':             [0.5, 6.5],
+                   'xticks':           [1, 2, 3, 4, 5, 6],
+                   'xticklabels':      [r'$1$', r'$2$', r'$3$', r'$4$', r'$5$', r'$6$'],
+                   'ylim':             [1e0, 1e5],
+                   'yticks':           [1e0, 1e2, 1e4],
+                   'yticklabels':      [r'$10^{0}$', r'$10^{2}$',r'$10^{4}$'],
+                   'yminorticks':      [1e1, 1e3, 1e5],
+                   'yminorticklabels': ['', '', ''],
+                   'logy':             True,
+                   'ylabel':           'Number of clones',
+                   'xlabel':           'Accumulated mutations',
+                   'axoffset':         0.1,
+                   'plotprops':        barprops,
+                   'theme':            'open' }
+                   
+        if idx==0:
+            ax_mut[idx].text((bbox[idx]['left']+bbox[idx]['right'])/2 - 0.01, bbox[idx]['top']-0.01, '1 year on ART', ha='center', transform=fig.transFigure, **DEF_LABELPROPS)
+            ax_mut[idx].text(bbox[idx]['left']-0.025, bbox[idx]['top']+0.02, 'B', transform=fig.transFigure, **DEF_SUBLABELPROPS)
+            
+        else:
+            ax_mut[idx].text((bbox[idx]['left']+bbox[idx]['right'])/2 - 0.01, bbox[idx]['top']-0.01, '5 years on ART', ha='center', transform=fig.transFigure, **DEF_LABELPROPS)
+
+        df_t = df_mutations[df_mutations['t']==t_mut[idx]]
+        Nmut = np.array(df_t['Nmut'])
+        x, t = np.unique(Nmut, return_counts=True)
+
+        mp.plot(type='bar', ax=ax_mut[idx], x=[x], y=[t], colors=[C_MUT], **pprops)
+
+    
+    # SAVE FIGURE
+
+    plt.savefig('%s/%s%s' % (FIG_DIR, fig_title, EXT), dpi = 1000, facecolor = fig.get_facecolor(), edgecolor=None, **FIGPROPS)
+    plt.close(fig)
+    
+    
+def plot_lr_distribution_ei(clone_file, timepoints, fig_title):
+    """ Plot latent clone size and reactivation probability distribution after early intervention/elite control. """
+    
+    # get data
+    df_clones = pd.read_csv(clone_file, memory_map=True)
+    
+    # set up figure grid
+    w     = SINGLE_COLUMN #SLIDE_WIDTH
+    goldh = w * 1.35
+    fig   = plt.figure(figsize=(w, goldh))
+    
+    box_t  = 0.95
+    box_b  = 0.10
+    box_l  = 0.15
+    box_r  = 0.85
+    box_dh = box_t - box_b - (2 * 0.70 * w / goldh) * (box_r - box_l)
+    box_h  = (box_t - box_b - box_dh)/2
+
+    box = [0, 0]
+
+    box[0] = dict(left=box_l, right=box_r, top=box_t - 0*box_h - 0*box_dh, bottom=box_t - 1*box_h - 0*box_dh)
+    box[1] = dict(left=box_l, right=box_r, top=box_t - 1*box_h - 1*box_dh, bottom=box_t - 2*box_h - 1*box_dh)
+    
+    lineprops     = {'lw': 2*SIZELINE, 'ls': '-', 'alpha': 1 }
+    dashprops     = {'lw': 2*SIZELINE, 'ls': ':', 'alpha': 0.5}
+    tempdashprops = {'lw': 2*SIZELINE, 'ls': ':', 'alpha': 1.0}
+    scatterprops  = dict(lw=AXWIDTH/2, s=SMALLSIZEDOT*5.0, marker='o', alpha=0.5, fc=C_CLONE, ec=BKCOLOR)
+
+    gs = [gridspec.GridSpec(1, 1, **box[i]) for i in range(len(box))]
+    ax = [plt.subplot(gs[i][0,0]) for i in range(len(box))]
+    
+    for idx in range(len(box)):
+        
+        pprops = { 'xlim':        [-4, 0],
+                   'xticks':      [-4, -2, 0],
+                   'xticklabels': [r'$10^{-4}$', r'$10^{-2}$', r'$10^{0}$'],
+                   'ylim':        [0, 3],
+                   'yticks':      [0, 1, 2, 3],
+                   'yticklabels': [r'$10^{0}$', r'$10^{1}$', r'$10^{2}$', r'$10^{3}$'],
+                   'logy':        False,
+                   'ylabel':      r'Clone size (number of cells)',
+                   'xlabel':      r'Probability of reactivation, $p_{r}$',
+                   'axoffset':    0.1,
+                   'theme':       'open' }
+                   
+        ax_used = ax[idx]
+        
+        if idx==0:
+            ax_used.text((box[idx]['left']+box[idx]['right'])/2, box[idx]['top']-0.01, 'Start of early intervention', ha='center', transform=fig.transFigure, **DEF_LABELPROPS)
+            ax_used.text(box[idx]['left']-0.10, box[idx]['top']+0.01, 'A', transform=fig.transFigure, **DEF_SUBLABELPROPS)
+            
+        else:
+            ax_used.text((box[idx]['left']+box[idx]['right'])/2, box[idx]['top']-0.01, '%d months' % timepoints[idx], ha='center', transform=fig.transFigure, **DEF_LABELPROPS)
+            ax_used.text(box[idx]['left']-0.10, box[idx]['top']+0.01, 'B', transform=fig.transFigure, **DEF_SUBLABELPROPS)
+        
+        xdat = [np.array([1, 2])]
+        ydat = [np.array([-1, -2])]
+
+        mp.plot(type='line', ax=ax_used, x=xdat, y=ydat, colors=[BKCOLOR], plotprops=lineprops, **pprops)
+
+        df_clones_temp = df_clones[df_clones['t']==timepoints[idx]]
+        r = np.array(df_clones_temp['r'])
+        L = np.array(df_clones_temp['L'])
+        r = np.delete(r, np.where(L<1))
+        L = np.delete(L, np.where(L<1))
+        
+        mp.scatter(ax=ax_used, x=[np.log10(r)], y=[np.log10(L)], plotprops=scatterprops)
+        
+        if idx==0:
+            ax_used.text(-3.3, 1.7, 'Few clones likely\nto expand', ha='left', va='top', **DEF_LABELPROPS)
+            ellipse = matplotlib.patches.Ellipse(xy=(-2, 0.8), width=2.2, height=1.2, angle=30, fc=None, fill=False, ec=BKCOLOR, **tempdashprops)
+            ax_used.add_patch(ellipse)
+        
     # SAVE FIGURE
 
     plt.savefig('%s/%s%s' % (FIG_DIR, fig_title, EXT), dpi = 1000, facecolor = fig.get_facecolor(), edgecolor=None, **FIGPROPS)
