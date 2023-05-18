@@ -1084,6 +1084,497 @@ def plot_lr_distribution_art_old(clone_file, timepoints, fig_title, order=7):
     plt.savefig('%s/%s%s' % (FIG_DIR, fig_title, EXT), dpi = 1000, facecolor = fig.get_facecolor(), edgecolor=None, **FIGPROPS)
     plt.close(fig)
     
+
+def plot_decay_FullVSConstantLatent(total_full_file, total_constant_file, fig_title):
+    """ Plot decays comparison between full simulation and constant production of latent clones. """
+    
+    # get data
+    df_totals_fullsim = pd.read_csv(total_full_file, memory_map=True)
+    t_fullsim         = np.array(df_totals_fullsim['t'])
+    Ltotal_fullsim    = np.array(df_totals_fullsim['Ltotal'])
+    nLclones_fullsim  = np.array(df_totals_fullsim['nLclones'])
+    
+    df_totals_constantLatent_order7 = pd.read_csv(total_constant_file, memory_map=True)
+    time_constantLatent_order7      = np.array(df_totals_constantLatent_order7['t'])
+    nClones_constantLatent_order7   = np.array(df_totals_constantLatent_order7['nClones'])
+    Ltotal_constantLatent_order7    = np.array(df_totals_constantLatent_order7['Ltotal'])
+    
+    monthsART_fullsim  = 60
+    
+    ## set up figure grid
+    
+    w     = ONE_FIVE_COLUMN #SLIDE_WIDTH
+    goldh = w / 3
+    fig   = plt.figure(figsize=(w, goldh))
+
+    left_bd   = 0.1
+    right_bd  = 0.96
+    h_space   = 0.10
+    box_h     = (right_bd - left_bd - 2*h_space)/2
+    top_bd    = 0.92
+    bottom_bd = 0.21
+    v_space   = 0.10
+    box_v     = (top_bd - bottom_bd - 0*v_space)/1
+
+    box_left   = dict(left=left_bd + 0*box_h + 0*h_space, right=left_bd + 1*box_h + 0*h_space, top=top_bd, bottom=bottom_bd)
+    box_right  = dict(left=left_bd + 1*box_h + 1*h_space, right=left_bd + 2*box_h + 1*h_space, top=top_bd, bottom=bottom_bd)
+
+    #Start of ART plot
+
+    lineprops = {'lw': 2*SIZELINE, 'ls': '-', 'alpha': 1 }
+    dashprops = {'lw': 2*SIZELINE, 'ls': ':', 'alpha': 0.5 }
+
+    gs_left = gridspec.GridSpec(1, 1, **box_left)
+    ax_left = plt.subplot(gs_left[0,0])
+
+    pprops = { 'xlim':        [-2, 2],
+               'xticks':      [-2, -1, 0, 1, 2],
+               'xticklabels': [r'$-2$', r'$-1$', r'$0$', r'$1$', r'$2$'],
+               'ylim':        [1e2, 1e6],
+               'yticks':      [1e2, 1e4, 1e6],
+               'yticklabels': [r'$10^{2}$', r'$10^{4}$', r'$10^{6}$'],
+               'logy':        True,
+               'ylabel':      '',
+               'xlabel':      'Time on ART (months)',
+               'axoffset':    0.1,
+               'theme':       'open' }
+
+
+    xdat = [(t_fullsim-monthsART_fullsim)]
+    ydat = [nLclones_fullsim]
+
+
+
+    mp.plot(type='line',ax=ax_left, x=xdat, y=ydat, colors=['b'], plotprops=lineprops, **pprops)
+    ax_left.plot(t_fullsim-monthsART_fullsim, Ltotal_fullsim, color='r')
+
+    ax_left.plot(time_constantLatent_order7  - monthsART_fullsim, nClones_constantLatent_order7, color='g')
+    ax_left.plot(time_constantLatent_order7  - monthsART_fullsim, Ltotal_constantLatent_order7, color='orange')
+
+
+    # First year on ART plot
+
+    gs_right = gridspec.GridSpec(1, 1, **box_right)
+    ax_right = plt.subplot(gs_right[0,0])
+
+    pprops = { 'xlim':        [0, 12],
+               'xticks':      [0, 3, 6, 9, 12],
+               'xticklabels': [r'$0$', r'$3$', r'$6$', r'$9$', r'$12$'],
+               'ylim':        [1e0, 1e6],
+               'yticks':      [1e0, 1e2, 1e4, 1e6],
+               'yticklabels': [r'$10^{0}$', r'$10^{2}$', r'$10^{4}$', r'$10^{6}$'],
+               'logy':        True,
+               'ylabel':      '',
+               'xlabel':      'Time on ART (months)',
+               'axoffset':    0.1,
+               'theme':       'open' }
+
+    xdat = [(t_fullsim-monthsART_fullsim)]
+    ydat = [nLclones_fullsim]
+
+    mp.plot(type='line',ax=ax_right, x=xdat, y=ydat, colors=['b'], plotprops=lineprops, **pprops)
+    ax_right.plot(t_fullsim-monthsART_fullsim, Ltotal_fullsim, color='r')
+
+    ax_right.plot(time_constantLatent_order7  - monthsART_fullsim, nClones_constantLatent_order7, color='g')
+    ax_right.plot(time_constantLatent_order7  - monthsART_fullsim, Ltotal_constantLatent_order7, color='orange')
+        
+
+        
+    ax_left.text(box_left['left']-0.08, box_left['top']+0.01, 'a'.lower(), transform=fig.transFigure, **DEF_SUBLABELPROPS)
+    ax_right.text(box_right['left']-0.08, box_right['top']+0.01, 'b'.lower(), transform=fig.transFigure, **DEF_SUBLABELPROPS)
+       
+        
+    colors    = ['b', 'r','g','orange']
+    plotprops = DEF_ERRORPROPS.copy()
+    plotprops['clip_on'] = False
+
+    invt = ax_right.transData.inverted()
+    xy1  = invt.transform((   0, 0))
+    xy2  = invt.transform((7.50, 9))
+    xy3  = invt.transform((3.00, 9))
+    xy4  = invt.transform((5.25, 9))
+
+    legend_dx1 = xy1[0]-xy2[0]
+    legend_dx2 = xy1[0]-xy3[0]
+    legend_dx  = xy1[0]-xy4[0]
+    legend_dy  = xy1[1]-xy2[1]
+    legend_x   = 13
+    # legend_y   = [2, 2 + 4*legend_dy, 2 + 8*legend_dy, 2 + 120*legend_dy]
+    legend_y = [1e2, 1e5, 1e1, 1e4]
+
+    legend_t   = ['nL FullSim', 'L FullSim', 'nL simplified', 'L simplified']
+    for k in range(len(legend_y)):
+        mp.error(ax=ax_right, x=[[legend_x+legend_dx]], y=[[legend_y[k]]], edgecolor=[colors[k]], facecolor=[colors[k]], plotprops=plotprops, **pprops)
+        ax_right.text(legend_x, legend_y[k], legend_t[k], ha='left', va='center', **DEF_LABELPROPS)
+        
+    # SAVE FIGURE
+    
+    plt.savefig('%s/%s%s' % (FIG_DIR, fig_title, EXT), dpi = 1000, facecolor = fig.get_facecolor(), edgecolor=None, **FIGPROPS)
+    plt.close(fig)
+
+    
+def plot_distribution_FullVSConstantLatent(clone_full_file, clone_constant_file, fig_title):
+    """ Plot latent clone size and reactivation probability distribution comparison between full simulation and constant production of latent clones. """
+    
+    
+    # NEED TO FIX THE AXIS
+    
+    # get data
+    df_clones_fullsim = pd.read_csv(clone_full_file, memory_map=True)
+    df_clones_constantLatent_order7 = pd.read_csv(clone_constant_file, memory_map=True)
+    
+    
+    # PLOT FIGURE
+    cmap = cm.get_cmap('PuBu')
+    ## set up figure grid
+
+    w     = ONE_FIVE_COLUMN #SLIDE_WIDTH
+    goldh = w*2
+    fig   = plt.figure(figsize=(w, goldh))
+
+    left_bd   = 0.1
+    right_bd  = 0.9
+    h_space   = 0.1
+    box_h     = (right_bd - left_bd - h_space)/2
+    top_bd    = 0.98
+    bottom_bd = 0.04
+    v_space   = 0.05
+    box_v     = (top_bd - bottom_bd - 3*v_space)/4
+
+    box_fullsim_Start   = dict(left=left_bd + 0*box_h + 0*h_space, right=left_bd + 1*box_h + 0*h_space, top=top_bd - 0*box_v - 0*v_space, bottom=top_bd - 1*box_v - 0*v_space)
+    box_fullsim_month4  = dict(left=left_bd + 0*box_h + 0*h_space, right=left_bd + 1*box_h + 0*h_space, top=top_bd - 1*box_v - 1*v_space, bottom=top_bd - 2*box_v - 1*v_space)
+    box_fullsim_month8  = dict(left=left_bd + 0*box_h + 0*h_space, right=left_bd + 1*box_h + 0*h_space, top=top_bd - 2*box_v - 2*v_space, bottom=top_bd - 3*box_v - 2*v_space)
+    box_fullsim_month12  = dict(left=left_bd + 0*box_h + 0*h_space, right=left_bd + 1*box_h + 0*h_space, top=top_bd - 3*box_v - 3*v_space, bottom=top_bd - 4*box_v - 3*v_space)
+
+    box_simplified_Start   = dict(left=left_bd + 1*box_h + 1*h_space, right=left_bd + 2*box_h + 1*h_space, top=top_bd - 0*box_v - 0*v_space, bottom=top_bd - 1*box_v - 0*v_space)
+    box_simplified_month4  = dict(left=left_bd + 1*box_h + 1*h_space, right=left_bd + 2*box_h + 1*h_space, top=top_bd - 1*box_v - 1*v_space, bottom=top_bd - 2*box_v - 1*v_space)
+    box_simplified_month8  = dict(left=left_bd + 1*box_h + 1*h_space, right=left_bd + 2*box_h + 1*h_space, top=top_bd - 2*box_v - 2*v_space, bottom=top_bd - 3*box_v - 2*v_space)
+    box_simplified_month12  = dict(left=left_bd + 1*box_h + 1*h_space, right=left_bd + 2*box_h + 1*h_space, top=top_bd - 3*box_v - 3*v_space, bottom=top_bd - 4*box_v - 3*v_space)
+
+
+    lineprops = {'lw': 2*SIZELINE, 'ls': '-', 'alpha': 1 }
+    dashprops = {'lw': 2*SIZELINE, 'ls': ':', 'alpha': 0.5 }
+
+    gs_fullsim_Start   = gridspec.GridSpec(1, 1, **box_fullsim_Start)
+    gs_fullsim_month4  = gridspec.GridSpec(1, 1, **box_fullsim_month4)
+    gs_fullsim_month8  = gridspec.GridSpec(1, 1, **box_fullsim_month8)
+    gs_fullsim_month12 = gridspec.GridSpec(1, 1, **box_fullsim_month12)
+
+
+    gs_simplified_Start   = gridspec.GridSpec(1, 1, **box_simplified_Start)
+    gs_simplified_month4  = gridspec.GridSpec(1, 1, **box_simplified_month4)
+    gs_simplified_month8  = gridspec.GridSpec(1, 1, **box_simplified_month8)
+    gs_simplified_month12 = gridspec.GridSpec(1, 1, **box_simplified_month12)
+
+
+    ax_fullsim_Start   = plt.subplot(gs_fullsim_Start[0,0])
+    ax_fullsim_month4  = plt.subplot(gs_fullsim_month4[0,0])
+    ax_fullsim_month8  = plt.subplot(gs_fullsim_month8[0,0])
+    ax_fullsim_month12 = plt.subplot(gs_fullsim_month12[0,0])
+
+    ax_simplified_Start   = plt.subplot(gs_simplified_Start[0,0])
+    ax_simplified_month4  = plt.subplot(gs_simplified_month4[0,0])
+    ax_simplified_month8  = plt.subplot(gs_simplified_month8[0,0])
+    ax_simplified_month12 = plt.subplot(gs_simplified_month12[0,0])
+
+
+    pprops = { 'xlim':        [-5, 0],
+               'xticks':      [-5, -2.5, 0],
+               'xticklabels': [r'$10^{-5}$', r'$10^{-2.5}$', r'$10^{0}$'],
+               'ylim':        [0, 5],
+               'yticks':      [0, 2.5, 5],
+               'yticklabels': [r'$10^{0}$', r'$10^{2.5}$', r'$10^{5}$'],
+               'logy':        False,
+               'ylabel':      r'clone size',
+               'xlabel':      r'$p_{R}$',
+               'axoffset':    0.1,
+               'theme':       'open' }
+        
+    for i in range(4):
+        if i ==0:
+            ax_used_fullsim = ax_fullsim_Start
+            ax_used_simp    = ax_simplified_Start
+            timepoint = 0
+        elif i==1:
+            ax_used_fullsim = ax_fullsim_month4
+            ax_used_simp    = ax_simplified_month4
+            timepoint = 4
+        elif i ==2:
+            ax_used_fullsim = ax_fullsim_month8
+            ax_used_simp    = ax_simplified_month8
+            timepoint = 8
+        elif i==3:
+            ax_used_fullsim = ax_fullsim_month12
+            ax_used_simp    = ax_simplified_month12
+            timepoint = 12
+    
+        xdat = [np.array([1,2])]
+        ydat = [np.array([-1,-2])]
+
+        mp.plot(type='line',ax=ax_used_fullsim, x=xdat, y=ydat, colors=[BKCOLOR], plotprops=lineprops, **pprops)
+        mp.plot(type='line',ax=ax_used_simp, x=xdat, y=ydat, colors=[BKCOLOR], plotprops=lineprops, **pprops)
+
+        
+        
+        ## Full simulation
+        df_clones_temp = df_clones_fullsim[df_clones_fullsim['t']==60+timepoint]
+        r = np.array(df_clones_temp['r'])
+        L = np.array(df_clones_temp['L'])
+        r = np.delete(r, np.where(L<1))
+        L = np.delete(L, np.where(L<1))
+        density = np.zeros((50, 50))
+        for k in range(len(L)):
+            i = -int((np.log10(r[k]))/0.1)  #0.1 is size of step in p_r
+            j = int((np.log10(L[k]))/0.1) #0.1 is size of step in clone size
+            density[i][j] += 1
+
+        rx = np.arange(0.05,5,0.1)
+        fy = np.arange(0.05,5,0.1)
+        x = np.zeros(50*50)
+        y = np.zeros(50*50)
+        z = np.zeros(50*50)
+
+        for i in range(50):
+            for j in range(50):
+                x[i*50+j] = rx[i]
+                y[i*50+j] = fy[j]
+                z[i*50+j] = density[i][j]
+
+        points = np.column_stack((-x,y))
+        values = np.log10(z+1)
+        # values = z
+        grid_x, grid_y = np.mgrid[-5:0:100j, 0:5:100j]
+        grid_z = griddata(points, values, (grid_x, grid_y), method='linear')
+        masked_array = np.ma.array(grid_z.T, mask = grid_z.T==0)
+
+        vmax_order = 2
+
+        im = ax_used_fullsim.imshow(masked_array, cmap=cmap, extent=(-5,0,0,5), origin='lower', vmin=0, vmax=vmax_order, aspect='auto')
+
+        ## simplified simulation
+        df_clones_temp = df_clones_constantLatent_order7[df_clones_constantLatent_order7['t']==60+timepoint]
+        r = np.array(df_clones_temp['r'])
+        L = np.array(df_clones_temp['L'])
+        r = np.delete(r, np.where(L<1))
+        L = np.delete(L, np.where(L<1))
+        density = np.zeros((50, 50))
+        for k in range(len(L)):
+            i = -int((np.log10(r[k]))/0.1)  #0.1 is size of step in p_r
+            j = int((np.log10(L[k]))/0.1) #0.1 is size of step in clone size
+            density[i][j] += 1
+
+        rx = np.arange(0.05,5,0.1)
+        fy = np.arange(0.05,5,0.1)
+        x = np.zeros(50*50)
+        y = np.zeros(50*50)
+        z = np.zeros(50*50)
+
+        for i in range(50):
+            for j in range(50):
+                x[i*50+j] = rx[i]
+                y[i*50+j] = fy[j]
+                z[i*50+j] = density[i][j]
+
+        points = np.column_stack((-x,y))
+        values = np.log10(z+1)
+        # values = z
+        grid_x, grid_y = np.mgrid[-5:0:100j, 0:5:100j]
+        grid_z = griddata(points, values, (grid_x, grid_y), method='linear')
+        masked_array = np.ma.array(grid_z.T, mask = grid_z.T==0)
+
+        vmax_order = 2
+
+
+        im = ax_used_simp.imshow(masked_array, cmap=cmap, extent=(-5,0,0,5), origin='lower', vmin=0, vmax=vmax_order, aspect='auto')
+
+
+        
+        
+    ax_fullsim_Start.text(box_fullsim_Start['left']+0.15, box_fullsim_Start['top']-0.01, 'Start of ART', transform=fig.transFigure, **DEF_LABELPROPS)
+    ax_fullsim_month4.text(box_fullsim_month4['left']+0.125, box_fullsim_month4['top']-0.01, '4 months on ART', transform=fig.transFigure, **DEF_LABELPROPS)
+    ax_fullsim_month4.text(box_fullsim_month8['left']+0.125, box_fullsim_month8['top']-0.01, '8 months on ART', transform=fig.transFigure, **DEF_LABELPROPS)
+    ax_fullsim_month4.text(box_fullsim_month12['left']+0.125, box_fullsim_month12['top']-0.01, '12 months on ART', transform=fig.transFigure, **DEF_LABELPROPS)
+
+    ax_simplified_Start.text(box_simplified_Start['left']+0.15, box_simplified_Start['top']-0.01, 'Start of ART', transform=fig.transFigure, **DEF_LABELPROPS)
+    ax_simplified_month4.text(box_simplified_month4['left']+0.125, box_simplified_month4['top']-0.01, '4 months on ART', transform=fig.transFigure, **DEF_LABELPROPS)
+    ax_simplified_month8.text(box_simplified_month8['left']+0.125, box_simplified_month8['top']-0.01, '8 months on ART', transform=fig.transFigure, **DEF_LABELPROPS)
+    ax_simplified_month12.text(box_simplified_month12['left']+0.125, box_simplified_month12['top']-0.01, '12 months on ART', transform=fig.transFigure, **DEF_LABELPROPS)
+
+
+    ax_fullsim_Start.text(box_fullsim_Start['left']-0.07, box_fullsim_Start['top']+0.01, 'a'.lower(), transform=fig.transFigure, **DEF_SUBLABELPROPS)
+    ax_simplified_Start.text(box_simplified_Start['left']-0.07, box_simplified_Start['top']+0.01, 'b'.lower(), transform=fig.transFigure, **DEF_SUBLABELPROPS)
+       
+        
+
+    fig.subplots_adjust(right=0.8)
+    
+    # color bar
+    cbar_ax = fig.add_axes([0.926,0.05,0.01,0.93])
+    ticks_order = [0, 1, 2]
+    cbar = fig.colorbar(im, cax=cbar_ax, ticks=ticks_order)
+    cbar.ax.set_yticklabels([r'$10^{0}$', r'$10^{1}$', r'$10^{2}$'])
+    cbar.ax.tick_params(labelsize=SIZETICK, size=0)
+    #cbar.set_label(label='Density (number of clones)', fontsize=SIZELABEL)
+    cbar_ax.text(0.98, (top_bd+bottom_bd)/2, 'Density (number of clones)', ha='center', va='center', rotation=90,
+                 transform=fig.transFigure, **DEF_LABELPROPS)
+    cbar.outline.set_visible(False)
+    
+
+    # SAVE FIGURE
+
+    plt.savefig('%s/%s%s' % (FIG_DIR, fig_title, EXT), dpi = 1000, facecolor = fig.get_facecolor(), edgecolor=None, **FIGPROPS)
+    plt.close(fig)
+    
+    
+def plot_new_mutated_sequences(total_full_file, fig_title):
+    
+    # get data
+    df_totals_fullsim = pd.read_csv(total_full_file, memory_map=True)
+    t_fullsim         = np.array(df_totals_fullsim['t'])
+    
+    monthsART_fullsim  = 60
+    nmL_fullsim        = np.array(df_totals_fullsim['nmL'])
+    nmA_fullsim        = np.array(df_totals_fullsim['nmA'])
+    
+    ## set up figure grid
+        
+    w     = ONE_FIVE_COLUMN #SLIDE_WIDTH
+    goldh = w / 3
+    fig   = plt.figure(figsize=(w, goldh))
+
+    left_bd   = 0.1
+    right_bd  = 0.96
+    h_space   = 0.10
+    box_h     = (right_bd - left_bd - 2*h_space)/2
+    top_bd    = 0.92
+    bottom_bd = 0.21
+    v_space   = 0.10
+    box_v     = (top_bd - bottom_bd - 0*v_space)/1
+
+    box_left   = dict(left=left_bd + 0*box_h + 0*h_space, right=left_bd + 1*box_h + 0*h_space, top=top_bd, bottom=bottom_bd)
+    box_right  = dict(left=left_bd + 1*box_h + 1*h_space, right=left_bd + 2*box_h + 1*h_space, top=top_bd, bottom=bottom_bd)
+
+    #First plot
+
+    lineprops = {'lw': 2*SIZELINE, 'ls': '-', 'alpha': 1 }
+    dashprops = {'lw': 2*SIZELINE, 'ls': ':', 'alpha': 0.5 }
+
+    gs_left = gridspec.GridSpec(1, 1, **box_left)
+    ax_left = plt.subplot(gs_left[0,0])
+
+    pprops = { 'xlim':      [0, 12],
+               'xticks':      [0, 3, 6, 9, 12],
+               'xticklabels': [r'$0$', r'$3$', r'$6$', r'$9$', r'$12$'],
+               'ylim':        [1e0, 1e1],
+               'yticks':      [1e0, 4, 1e1],
+               'yticklabels': [r'$1$', r'$4$',r'$10$'],
+               'logy':        True,
+               'ylabel':      '',
+               'xlabel':      'Time on ART (months)',
+               'axoffset':    0.1,
+               'theme':       'open' }
+
+
+    # xdat = [(t_fullsim-monthsART_fullsim)]
+    # ydat = [nmA_fullsim]
+
+    xdat = [np.array([1e3,1e4])]
+    ydat = [np.array([1e3,1e4])]
+
+
+    mp.plot(type='line',ax=ax_left, x=xdat, y=ydat, colors=['b'], plotprops=lineprops, **pprops)
+
+
+    # here we took 3 as our input
+    n = 100
+    # calculates the average
+    nmA_fullsim_avg = np.max(nmA_fullsim[69:].reshape(-1,n), axis=1)
+    nmL_fullsim_avg = np.max(nmL_fullsim[69:].reshape(-1,n), axis=1)
+
+    ttt = np.average((t_fullsim-monthsART_fullsim)[69:].reshape(-1, n), axis=1)
+
+    ax_left.plot(ttt, nmA_fullsim_avg, '-', color='b')
+    ax_left.plot(ttt, nmL_fullsim_avg, '-', color='r')
+
+
+    # Second plot
+
+    gs_right = gridspec.GridSpec(1, 1, **box_right)
+    ax_right = plt.subplot(gs_right[0,0])
+
+    pprops = { 'xlim':      [0, 12],
+               'xticks':      [0, 3, 6, 9, 12],
+               'xticklabels': [r'$0$', r'$3$', r'$6$', r'$9$', r'$12$'],
+               'ylim':        [1e0, 1e1],
+               'yticks':      [1e0, 4, 1e1],
+               'yticklabels': [r'$1$', r'$4$',r'$10$'],
+               'logy':        True,
+               'ylabel':      '',
+               'xlabel':      'Time on ART (months)',
+               'axoffset':    0.1,
+               'theme':       'open' }
+
+
+    # xdat = [(t_fullsim-monthsART_fullsim)]
+    # ydat = [nmA_fullsim]
+
+    xdat = [np.array([1e3,1e4])]
+    ydat = [np.array([1e3,1e4])]
+
+
+    mp.plot(type='line',ax=ax_right, x=xdat, y=ydat, colors=['b'], plotprops=lineprops, **pprops)
+
+
+    # here we took 3 as our input
+    n = 100
+    # calculates the average
+    nmA_fullsim_avg = np.average(nmA_fullsim[69:].reshape(-1,n), axis=1)
+    nmL_fullsim_avg = np.average(nmL_fullsim[69:].reshape(-1,n), axis=1)
+
+    ttt = np.average((t_fullsim-monthsART_fullsim)[69:].reshape(-1, n), axis=1)
+
+    ax_right.plot(ttt, nmA_fullsim_avg, '-', color='b')
+    ax_right.plot(ttt, nmL_fullsim_avg, '-', color='r')
+        
+
+        
+    ax_left.text(box_left['left']-0.08, box_left['top']+0.01, 'a'.lower(), transform=fig.transFigure, **DEF_SUBLABELPROPS)
+    ax_right.text(box_right['left']-0.08, box_right['top']+0.01, 'b'.lower(), transform=fig.transFigure, **DEF_SUBLABELPROPS)
+       
+        
+    colors    = ['b', 'r']
+    plotprops = DEF_ERRORPROPS.copy()
+    plotprops['clip_on'] = False
+
+    invt = ax_right.transData.inverted()
+    xy1  = invt.transform((   0, 0))
+    xy2  = invt.transform((7.50, 9))
+    xy3  = invt.transform((3.00, 9))
+    xy4  = invt.transform((5.25, 9))
+
+    legend_dx1 = xy1[0]-xy2[0]
+    legend_dx2 = xy1[0]-xy3[0]
+    legend_dx  = xy1[0]-xy4[0]
+    legend_dy  = xy1[1]-xy2[1]
+    legend_x   = 13
+    # # legend_y   = [2, 2 + 4*legend_dy, 2 + 8*legend_dy, 2 + 120*legend_dy]
+    legend_y = [5, 4]
+
+    legend_t   = ['nmA', 'nmL']
+    for k in range(len(legend_y)):
+        mp.error(ax=ax_right, x=[[legend_x+legend_dx]], y=[[legend_y[k]]], edgecolor=[colors[k]], facecolor=[colors[k]], plotprops=plotprops, **pprops)
+        ax_right.text(legend_x, legend_y[k], legend_t[k], ha='left', va='center', **DEF_LABELPROPS)
+    
+    
+    
+    
+    # SAVE FIGURE
+
+    plt.savefig('%s/%s%s' % (FIG_DIR, fig_title, EXT), dpi = 1000, facecolor = fig.get_facecolor(), edgecolor=None, **FIGPROPS)
+    plt.close(fig)
+    
+
+    
     
 ############################$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
     
