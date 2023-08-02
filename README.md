@@ -3,8 +3,8 @@
 
 This repository contains and data and scripts for reproducing the results accompanying the manuscript  
 
-### Title of paper
-Author One<sup>1</sup>, Author Two<sup>2</sup>, and John P. Barton<sup>1,2,3,#</sup>
+### Clonal heterogeneity and antigenic stimulation shape persistence of the latent reservoir of HIV
+Marco Garcia Noceda<sup>1</sup>, and John P. Barton<sup>1,2,3,#</sup>
 
 <sup>1</sup> Department of Physics and Astronomy, University of California, Riverside  
 <sup>2</sup> Department of Physics and Astronomy, University of Pittsburgh  
