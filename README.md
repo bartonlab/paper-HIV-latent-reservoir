@@ -30,10 +30,12 @@ Simulations make use of C++11 and OpenMP to run in parallel.
 ### Compilation examples
 
 To compile and run on mac:
+
 `clang++ -Xpreprocessor -fopenmp -I/usr/local/include -L/usr/local/lib -lomp fullsimulation.cpp -o fullsimulation.exe -std=c++11`
 `./simulation.exe`
 
 To compile and run on linux:
+
 `g++ -fopenmp -std=c++11 fullsimulation.cpp -o fullsimulation.exe`
 `./simulation.exe`
 
